@@ -1,0 +1,11 @@
+{
+  "@@locale": "es",
+  "appTitle": "BricoMalin",
+  "welcome": "Bienvenido",
+  "login": "Iniciar sesión",
+  "register": "Registrarse",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "displayName": "Nombre para mostrar"
+}
+

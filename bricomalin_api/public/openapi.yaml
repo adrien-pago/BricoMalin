@@ -1,0 +1,231 @@
+openapi: 3.0.0
+info:
+  title: BricoMalin API
+  version: 1.0.0
+  description: API REST pour l'application BricoMalin
+
+servers:
+  - url: http://localhost:8000
+    description: Serveur de développement
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Inscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                displayName:
+                  type: string
+      responses:
+        '201':
+          description: Inscription réussie
+        '400':
+          description: Erreur de validation
+
+  /api/auth/login:
+    post:
+      summary: Connexion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /api/me:
+    get:
+      summary: Profil utilisateur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil utilisateur
+
+  /api/categories:
+    get:
+      summary: Liste des catégories
+      responses:
+        '200':
+          description: Liste des catégories
+
+  /api/job-requests:
+    get:
+      summary: Liste des demandes
+      parameters:
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: integer
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des demandes
+    post:
+      summary: Créer une demande
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoryId:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+                department:
+                  type: string
+                city:
+                  type: string
+                isFree:
+                  type: boolean
+                suggestedPrice:
+                  type: string
+      responses:
+        '201':
+          description: Demande créée
+
+  /api/job-requests/{id}:
+    get:
+      summary: Détail d'une demande
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détail de la demande
+
+  /api/job-requests/{id}/offers:
+    post:
+      summary: Faire une offre
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '201':
+          description: Offre créée
+
+  /api/profiles/start:
+    post:
+      summary: Démarrer vérification PRO
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                siret:
+                  type: string
+      responses:
+        '200':
+          description: SIRET enregistré
+
+  /api/profiles/upload-id:
+    post:
+      summary: Upload pièce d'identité
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                idDocument:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Document uploadé
+
+  /api/payments/create-intent:
+    post:
+      summary: Créer un PaymentIntent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jobRequestId:
+                  type: integer
+                offerId:
+                  type: integer
+                mode:
+                  type: string
+                  enum: [BEFORE, AFTER]
+      responses:
+        '201':
+          description: PaymentIntent créé
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
+

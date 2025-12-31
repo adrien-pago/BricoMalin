@@ -1,0 +1,5 @@
+doctrine_fixtures:
+    orm:
+        fixtures:
+            - App\DataFixtures\AppFixtures
+
