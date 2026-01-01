@@ -23,6 +23,9 @@ class AuthApi {
           final token = await _storage.read(key: 'auth_token');
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
+            print('Header Authorization ajouté: Bearer ${token.substring(0, 20)}...');
+          } else {
+            print('Aucun token trouvé dans le storage');
           }
           return handler.next(options);
         },
@@ -59,9 +62,16 @@ class AuthApi {
 
   Future<UserModel> getMe() async {
     try {
+      // Vérifier que le token est disponible avant l'appel
+      final token = await _storage.read(key: 'auth_token');
+      print('Token avant getMe: ${token != null ? 'Présent (${token.substring(0, 20)}...)' : 'Absent'}');
+      
       final response = await _dio.get('/api/me');
       return UserModel.fromJson(response.data);
     } on DioException catch (e) {
+      // Log détaillé de l'erreur
+      print('Erreur getMe: ${e.response?.statusCode} - ${e.response?.data}');
+      print('Headers envoyés: ${e.requestOptions.headers}');
       throw _handleError(e);
     }
   }

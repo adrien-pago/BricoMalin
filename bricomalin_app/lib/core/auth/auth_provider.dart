@@ -60,6 +60,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
       final storedToken = await _storage.read(key: 'auth_token');
       print('Token stocké: ${storedToken != null ? 'Oui' : 'Non'}');
       
+      // Attendre un peu pour que le storage soit bien synchronisé
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      // Utiliser la même instance mais s'assurer que le token est bien lu
       final user = await _authApi.getMe();
       print('User récupéré: ${user.email}');
       
