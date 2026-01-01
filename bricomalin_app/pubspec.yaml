@@ -43,5 +43,5 @@ flutter:
   uses-material-design: true
   generate: true
 
-  assets:
-    - .env
+  # assets:
+  #   - .env  # Non nécessaire si on utilise --dart-define

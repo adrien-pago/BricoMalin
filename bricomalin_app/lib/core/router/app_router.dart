@@ -21,18 +21,27 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
+      // Ne pas rediriger si on est en train de charger
+      if (authState.isLoading) {
+        return null;
+      }
+
       final isAuthenticated = authState.valueOrNull != null;
       final isOnAuthPage = state.matchedLocation == '/login' || 
                           state.matchedLocation == '/register' ||
-                          state.matchedLocation == '/onboarding';
+                          state.matchedLocation == '/onboarding' ||
+                          state.matchedLocation == '/splash';
 
-      if (!isAuthenticated && !isOnAuthPage && state.matchedLocation != '/splash') {
+      // Si non authentifié et pas sur une page d'auth, rediriger vers login
+      if (!isAuthenticated && !isOnAuthPage) {
         return '/login';
       }
 
+      // Si authentifié et sur une page d'auth, rediriger vers home
       if (isAuthenticated && (state.matchedLocation == '/login' || 
                               state.matchedLocation == '/register' ||
-                              state.matchedLocation == '/onboarding')) {
+                              state.matchedLocation == '/onboarding' ||
+                              state.matchedLocation == '/splash')) {
         return '/home';
       }
 

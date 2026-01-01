@@ -45,10 +45,27 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
     state = const AsyncValue.loading();
     try {
       final response = await _authApi.login(email, password);
-      await _storage.write(key: 'auth_token', value: response['token']);
+      
+      // Debug: vérifier le format de la réponse
+      print('Login response: $response');
+      
+      final token = response['token'];
+      if (token == null) {
+        throw Exception('Token non reçu de l\'API');
+      }
+      
+      await _storage.write(key: 'auth_token', value: token);
+      
+      // Vérifier que le token est bien stocké
+      final storedToken = await _storage.read(key: 'auth_token');
+      print('Token stocké: ${storedToken != null ? 'Oui' : 'Non'}');
+      
       final user = await _authApi.getMe();
+      print('User récupéré: ${user.email}');
+      
       state = AsyncValue.data(user);
     } catch (e) {
+      print('Erreur login: $e');
       state = AsyncValue.error(e, StackTrace.current);
       rethrow;
     }

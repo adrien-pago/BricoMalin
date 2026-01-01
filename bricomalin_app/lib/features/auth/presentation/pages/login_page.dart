@@ -36,13 +36,34 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             _emailController.text.trim(),
             _passwordController.text,
           );
+      
+      // Attendre que l'état soit vraiment mis à jour
+      // On vérifie plusieurs fois pour être sûr
+      for (int i = 0; i < 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        final authState = ref.read(authProvider);
+        if (authState.valueOrNull != null && !authState.isLoading) {
+          break;
+        }
+      }
+      
       if (mounted) {
-        context.go('/home');
+        // Vérifier une dernière fois que l'utilisateur est authentifié
+        final authState = ref.read(authProvider);
+        if (authState.valueOrNull != null) {
+          context.go('/home');
+        } else {
+          // Si toujours pas authentifié, laisser le router gérer
+          // Le router devrait rediriger automatiquement
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {

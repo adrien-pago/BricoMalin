@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class SplashPage extends StatefulWidget {
+import '../../../../core/auth/auth_provider.dart';
+
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
     super.initState();
@@ -16,8 +19,30 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
+    // Attendre que l'état d'authentification soit chargé
+    // On attend jusqu'à ce que l'état ne soit plus en loading
+    int attempts = 0;
+    while (attempts < 20 && mounted) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+      
+      final authState = ref.read(authProvider);
+      if (!authState.isLoading) {
+        break;
+      }
+      attempts++;
+    }
+    
+    if (!mounted) return;
+    
+    final authState = ref.read(authProvider);
+    final isAuthenticated = authState.valueOrNull != null;
+    
+    if (!mounted) return;
+    
+    if (isAuthenticated) {
+      context.go('/home');
+    } else {
       context.go('/onboarding');
     }
   }

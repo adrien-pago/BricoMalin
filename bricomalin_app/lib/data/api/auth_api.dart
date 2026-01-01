@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/config/app_config.dart';
 import '../models/user_model.dart';
@@ -7,13 +8,27 @@ import 'api_client.dart';
 
 class AuthApi {
   final Dio _dio;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   AuthApi({Dio? dio}) : _dio = dio ?? Dio(
     BaseOptions(
       baseUrl: AppConfig.apiBaseUrl,
       headers: {'Content-Type': 'application/json'},
     ),
-  );
+  ) {
+    // Ajouter l'intercepteur pour le token
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await _storage.read(key: 'auth_token');
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+      ),
+    );
+  }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
