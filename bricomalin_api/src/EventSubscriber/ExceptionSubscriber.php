@@ -45,6 +45,16 @@ class ExceptionSubscriber implements EventSubscriberInterface
                     'message' => $violation->getMessage(),
                 ];
             }
+        } else {
+            // En mode dev, inclure le message d'erreur exact
+            if ($_ENV['APP_ENV'] === 'dev' || ($_SERVER['APP_ENV'] ?? null) === 'dev') {
+                $message = $exception->getMessage();
+                $details = [
+                    'exception' => get_class($exception),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                ];
+            }
         }
 
         $response = new JsonResponse([
