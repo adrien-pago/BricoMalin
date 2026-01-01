@@ -52,14 +52,15 @@ class DebugHeadersSubscriber implements EventSubscriberInterface
             error_log('$_SERVER auth-related keys: ' . json_encode(array_keys($authRelated)));
             
             // Apache peut stocker le header dans différentes variables $_SERVER
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $authorization = $_SERVER['HTTP_AUTHORIZATION'];
-                $request->headers->set('Authorization', $authorization);
-                error_log('Found in $_SERVER[HTTP_AUTHORIZATION]');
-            } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-                $authorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+            // REDIRECT_HTTP_AUTHORIZATION est souvent utilisé par mod_rewrite
+            if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && !empty(trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']))) {
+                $authorization = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
                 $request->headers->set('Authorization', $authorization);
                 error_log('Found in $_SERVER[REDIRECT_HTTP_AUTHORIZATION]');
+            } elseif (isset($_SERVER['HTTP_AUTHORIZATION']) && !empty(trim($_SERVER['HTTP_AUTHORIZATION']))) {
+                $authorization = trim($_SERVER['HTTP_AUTHORIZATION']);
+                $request->headers->set('Authorization', $authorization);
+                error_log('Found in $_SERVER[HTTP_AUTHORIZATION]');
             } elseif (function_exists('apache_request_headers')) {
                 error_log('Trying apache_request_headers()...');
                 // Dernière tentative avec apache_request_headers()
