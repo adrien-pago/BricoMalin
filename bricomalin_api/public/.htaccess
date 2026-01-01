@@ -3,14 +3,25 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
     
-    # Gérer le header Authorization pour Apache (important pour JWT)
-    # Cette règle passe le header Authorization à PHP via la variable d'environnement HTTP_AUTHORIZATION
-    RewriteCond %{HTTP:Authorization} ^(.*)
-    RewriteRule ^(.*)$ - [E=HTTP_AUTHORIZATION:%1]
+    # CRITIQUE : Gérer le header Authorization pour Apache avec FastCGI/PHP-FPM
+    # Apache ne transmet pas automatiquement ce header à PHP via FastCGI
+    # Cette règle capture le header Authorization et le passe à PHP
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
     
     # Redirection vers index.php si le fichier n'existe pas
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Alternative : utiliser SetEnvIf pour capturer le header
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+<IfModule mod_env.c>
+    # Forcer la transmission du header Authorization
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 </IfModule>
 
